@@ -10,3 +10,4 @@ Out of box script shows SharePoint applications pool ids, so you easy determine 
 
 ![Image of Yaktocat](https://github.com/gdbd/PsNotification/blob/master/Gdbd.PsNotification/Asset/PsNotification.jpg)
 
+Download: https://github.com/gdbd/PsNotification/releases
