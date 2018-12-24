@@ -3,6 +3,7 @@
     using System;
     using System.Linq;
     using System.Management.Automation;
+    using System.Management.Automation.Runspaces;
     using System.Windows.Forms;
 
     public partial class Form1 : Form
@@ -23,11 +24,30 @@
         {
             try
             {
-                using (PowerShell ps = PowerShell.Create())
+                var runspaceConfiguration = RunspaceConfiguration.Create();
+
+                using (Runspace runspace = RunspaceFactory.CreateRunspace(runspaceConfiguration))
                 {
-                    var res = ps.AddScript(@".\Command.ps1").Invoke();
-                    this.notifyIcon1.BalloonTipText = res.Aggregate("", (c, n) => this.FormatOutput(c, n.BaseObject.ToString()));
-                }
+                    runspace.Open();
+
+                    using (var scriptInvoker = new RunspaceInvoke(runspace))
+                    {
+                        scriptInvoker.Invoke("Set-ExecutionPolicy Unrestricted");
+                        using (var pipeline = runspace.CreatePipeline())
+                        {
+
+                            Command myCommand = new Command(@".\Command.ps1");
+                            pipeline.Commands.Add(myCommand);
+
+                            var res = pipeline.Invoke();
+                            this.notifyIcon1.BalloonTipText = res.Aggregate("", (c, n) => this.FormatOutput(c, n.BaseObject.ToString()));
+                            if (string.IsNullOrEmpty(this.notifyIcon1.BalloonTipText))
+                            {
+                                this.notifyIcon1.BalloonTipText = "script returns no results";
+                            }
+                        }
+                    }
+                }             
             }
             catch(Exception ex)
             {
